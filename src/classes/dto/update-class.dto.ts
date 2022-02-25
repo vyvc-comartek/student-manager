@@ -1,8 +1,10 @@
-import { IsInt, IsOptional, Length, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, Length } from 'class-validator';
 
 export class UpdateClassDto {
-  @Min(0)
+  @IsPositive()
   @IsInt()
+  @Type(() => Number)
   readonly id: number;
 
   @Length(3, 60)

@@ -1,21 +1,29 @@
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import { IsInt, IsPositive, Max, Min, ValidateIf } from 'class-validator';
 
 export class UpdateScoreDto {
-  @Min(0)
+  @ValidateIf((o) => o.id || !o.subject || !o.student)
+  @IsPositive()
   @IsInt()
-  readonly id: number;
+  @Type(() => Number)
+  readonly id?: number;
 
-  @Min(0)
+  @Expose({ name: 'studentId' })
+  @ValidateIf((o) => !o.id || (o.subject && o.student))
+  @IsPositive()
   @IsInt()
-  @IsOptional()
-  readonly studentId?: number;
+  @Type(() => Number)
+  readonly student?: number;
 
-  @Min(0)
+  @Expose({ name: 'subjectId' })
+  @ValidateIf((o) => !o.id || (o.subject && o.student))
+  @IsPositive()
   @IsInt()
-  @IsOptional()
-  readonly subjectId?: number;
+  @Type(() => Number)
+  readonly subject?: number;
 
   @Min(1)
   @Max(10)
+  @Type(() => Number)
   readonly score: number;
 }

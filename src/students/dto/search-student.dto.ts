@@ -1,17 +1,19 @@
+import { Expose, Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
   IsInt,
   IsOptional,
+  IsPositive,
   Length,
   Matches,
-  Min,
 } from 'class-validator';
 
 export class SearchStudentDto {
-  @Min(0)
+  @IsPositive()
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   readonly id?: number;
 
   @Length(3, 60)
@@ -34,8 +36,10 @@ export class SearchStudentDto {
   @IsOptional()
   readonly email?: string;
 
-  @Min(0)
+  @Expose({ name: 'classId' })
+  @IsPositive()
   @IsInt()
   @IsOptional()
-  readonly classId?: number;
+  @Type(() => Number)
+  readonly class?: number;
 }

@@ -1,18 +1,21 @@
-import { IsEnum, IsInt, IsOptional, Length, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsPositive, Length, ValidateIf } from 'class-validator';
 
 export class UpdateSubjectDto {
-  @Min(0)
+  @ValidateIf((o) => o.id || !o.name)
+  @IsPositive()
   @IsInt()
-  readonly id: number;
+  @Type(() => Number)
+  readonly id?: number;
 
+  @ValidateIf((o) => !o.id || o.name)
   @Length(3, 60)
-  @IsOptional()
-  readonly name: string;
+  readonly name?: string;
 
+  @ValidateIf((o) => o.type || !o.name)
   @IsEnum({
     ONLINE: 'Online',
     OFFLINE: 'Offline',
   } as const)
-  @IsOptional()
   readonly type?: 'Online' | 'Offline';
 }

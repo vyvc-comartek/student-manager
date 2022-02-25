@@ -1,9 +1,11 @@
-import { IsEnum, IsInt, IsOptional, Length, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsOptional, IsPositive, Length } from 'class-validator';
 
 export class SearchSubjectDto {
-  @Min(0)
+  @IsPositive()
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   readonly id?: number;
 
   @Length(3, 60)

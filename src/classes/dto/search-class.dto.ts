@@ -1,8 +1,10 @@
-import { IsInt, IsOptional, Matches, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, Matches } from 'class-validator';
 export class SearchClassDto {
-  @Min(0)
+  @IsPositive()
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   readonly id?: number;
 
   @IsOptional()

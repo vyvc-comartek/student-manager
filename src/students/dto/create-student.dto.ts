@@ -1,5 +1,12 @@
-import { Type } from 'class-transformer';
-import { IsDate, IsEmail, IsEnum, IsInt, Length, Min } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import {
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsInt,
+  IsPositive,
+  Length,
+} from 'class-validator';
 
 export class CreateStudentDto {
   @Length(3, 60)
@@ -19,7 +26,9 @@ export class CreateStudentDto {
   @IsEmail()
   readonly email: string;
 
-  @Min(0)
+  @Expose({ name: 'classId' })
+  @IsPositive()
   @IsInt()
-  readonly classId: number;
+  @Type(() => Number)
+  readonly class: number;
 }

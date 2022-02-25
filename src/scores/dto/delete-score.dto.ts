@@ -1,18 +1,24 @@
-import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import { IsInt, IsPositive, ValidateIf } from 'class-validator';
 
 export class DeleteScoreDto {
-  @Min(0)
+  @ValidateIf((o) => o.id || !o.subject || !o.student)
+  @IsPositive()
   @IsInt()
-  @IsOptional()
+  @Type(() => Number)
   readonly id?: number;
 
-  @ValidateIf((o) => !('id' in o))
-  @Min(0)
+  @Expose({ name: 'subjectId' })
+  @ValidateIf((o) => !o.id || o.subject || o.student)
+  @IsPositive()
   @IsInt()
-  readonly subjectId?: number;
+  @Type(() => Number)
+  readonly subject?: number;
 
-  @ValidateIf((o) => 'subjectId' in o)
-  @Min(0)
+  @Expose({ name: 'studentId' })
+  @ValidateIf((o) => !o.id || o.subject || o.student)
+  @IsPositive()
   @IsInt()
-  readonly studentId?: number;
+  @Type(() => Number)
+  readonly student?: number;
 }

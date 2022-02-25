@@ -1,7 +1,9 @@
-import { IsInt, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsPositive } from 'class-validator';
 
 export class DeleteStudentDto {
-  @Min(0)
+  @IsPositive()
   @IsInt()
+  @Type(() => Number)
   readonly id: number;
 }

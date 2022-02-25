@@ -1,6 +1,12 @@
 import { Student } from 'src/students/student.entity';
 import { Subject } from 'src/subjects/subject.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Score {
@@ -16,9 +22,11 @@ export class Score {
   })
   score: number;
 
-  @ManyToOne(() => Student)
+  @ManyToOne(() => Student, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'studentId' })
   student: Student;
 
-  @ManyToOne(() => Subject)
+  @ManyToOne(() => Subject, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'subjectId' })
   subject: Subject;
 }

@@ -15,8 +15,24 @@ export class ClassesService {
     @InjectRepository(Class)
     private readonly classesRepository: Repository<Class>,
   ) {}
-  async create(createClassDto: CreateClassDto) {}
-  async update(updateClassDto: UpdateClassDto) {}
-  async delete(deleteClassDto: DeleteClassDto) {}
-  async search(searchClassDto: SearchClassDto) {}
+
+  async create(createClassDto: CreateClassDto) {
+    return this.classesRepository.insert(createClassDto);
+  }
+
+  async update({ id, ...classProps }: UpdateClassDto) {
+    return this.classesRepository.update({ id }, classProps);
+  }
+
+  async delete({ id }: DeleteClassDto) {
+    return this.classesRepository.delete({ id });
+  }
+
+  async search(searchClassDto: SearchClassDto) {
+    const results = await this.classesRepository.findOne({
+      relations: ['students'],
+      ...searchClassDto,
+    });
+    return results;
+  }
 }

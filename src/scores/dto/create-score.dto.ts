@@ -1,14 +1,20 @@
-import { IsDecimal, IsInt, Max, Min } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import { IsInt, IsPositive, Max, Min } from 'class-validator';
 export class CreateScoreDto {
-  @Min(0)
+  @Expose({ name: 'studentId' })
+  @IsPositive()
   @IsInt()
-  readonly studentId: number;
+  @Type(() => Number)
+  readonly student: number;
 
-  @Min(0)
+  @Expose({ name: 'subjectId' })
+  @IsPositive()
   @IsInt()
-  readonly subjectId: number;
+  @Type(() => Number)
+  readonly subject: number;
 
   @Min(1)
   @Max(10)
+  @Type(() => Number)
   readonly score: number;
 }
