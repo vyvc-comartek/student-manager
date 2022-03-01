@@ -4,8 +4,10 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Score } from '../scores/score.entity';
 
 @Entity()
 export class Student {
@@ -29,8 +31,13 @@ export class Student {
   email: string;
 
   @ManyToOne(() => Class, (_class) => _class.students, {
-    onDelete: 'SET NULL',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'classId' })
   class: Class;
+
+  @OneToMany(() => Score, (_score) => _score.student)
+  scores: Score[];
+
+  scoreCount: number;
 }

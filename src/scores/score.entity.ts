@@ -22,11 +22,11 @@ export class Score {
   })
   score: number;
 
-  @ManyToOne(() => Student, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Student, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'studentId' })
   student: Student;
 
-  @ManyToOne(() => Subject, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Subject, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'subjectId' })
   subject: Subject;
 }

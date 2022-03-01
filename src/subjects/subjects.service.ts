@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subject } from 'src/subjects/subject.entity';
 import { Repository } from 'typeorm';
+import { SqlHttpMappingHandler } from '../general/sql-http-mapping.handler';
 import {
   CreateSubjectDto,
   DeleteSubjectDto,
@@ -30,7 +31,9 @@ export class SubjectsService {
   }
 
   async delete({ id, name }: DeleteSubjectDto) {
-    return this.subjectsRepository.delete(id ? { id } : { name });
+    return SqlHttpMappingHandler.handle(
+      this.subjectsRepository.delete(id ? { id } : { name }),
+    );
   }
 
   async search(searchSubjectDto: SearchSubjectDto) {
