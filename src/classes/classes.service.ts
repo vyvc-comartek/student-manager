@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SqlHttpMappingHandler } from 'src/general/sql-http-mapping.handler';
 import { Like as ILike, ObjectLiteral, Raw, Repository } from 'typeorm';
 import { Class } from './class.entity';
 import {
@@ -9,6 +8,7 @@ import {
   SearchClassDto,
   UpdateClassDto,
 } from './dto';
+import { CheckExistClassDto } from './shared-dto';
 
 @Injectable()
 export class ClassesService {
@@ -26,7 +26,7 @@ export class ClassesService {
   }
 
   async delete({ id }: DeleteClassDto) {
-    return SqlHttpMappingHandler.handle(this.classesRepository.delete({ id }));
+    return this.classesRepository.delete({ id });
   }
 
   async search({
@@ -68,6 +68,12 @@ export class ClassesService {
       ] as ObjectLiteral[]);
 
     return queryBuilder.getMany();
+  }
+
+  async checkExist(checkExistClassDto: CheckExistClassDto) {
+    return Boolean(
+      await this.classesRepository.findOne({ where: checkExistClassDto }),
+    );
   }
 
   //Hàm xử lý biểu thức của tham số totalMember thành giá trị hợp lệ khi thực hiện tìm kiếm
