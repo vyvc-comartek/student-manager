@@ -8,6 +8,11 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  DatabaseExceptions,
+  HttpExceptionMapper,
+} from '../general/http-exception.mapper';
+import { ScoresService } from '../scores/scores.service';
+import {
   CreateSubjectDto,
   DeleteSubjectDto,
   SearchSubjectDto,
@@ -17,25 +22,35 @@ import { SubjectsService } from './subjects.service';
 
 @Controller('subjects')
 export class SubjectsController {
-  constructor(private readonly subjectsService: SubjectsService) {}
+  constructor(
+    private readonly subjectsService: SubjectsService,
+    private readonly scoresService: ScoresService,
+  ) {}
 
   @Post()
-  create(@Body() createSubjectDto: CreateSubjectDto) {
+  async create(@Body() createSubjectDto: CreateSubjectDto) {
     return this.subjectsService.create(createSubjectDto);
   }
 
   @Patch()
-  update(@Body() updateSubjectDto: UpdateSubjectDto) {
+  async update(@Body() updateSubjectDto: UpdateSubjectDto) {
     return this.subjectsService.update(updateSubjectDto);
   }
 
   @Delete()
-  delete(@Body() deleteSubjectDto: DeleteSubjectDto) {
+  async delete(@Body() deleteSubjectDto: DeleteSubjectDto) {
+    const isScoreExist =
+      deleteSubjectDto.id &&
+      (await this.scoresService.checkExist({ subject: deleteSubjectDto.id }));
+
+    if (isScoreExist)
+      HttpExceptionMapper.throw(DatabaseExceptions.OBJ_REFERENCED);
+
     return this.subjectsService.delete(deleteSubjectDto);
   }
 
   @Get()
-  search(@Query() searchSubjectDto: SearchSubjectDto) {
+  async search(@Query() searchSubjectDto: SearchSubjectDto) {
     return this.subjectsService.search(searchSubjectDto);
   }
 }

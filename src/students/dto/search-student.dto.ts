@@ -1,5 +1,6 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import {
+  IsEnum,
   IsInt,
   IsOptional,
   IsPositive,
@@ -53,4 +54,11 @@ export class SearchStudentDto extends PaginationDto {
     else return values[0];
   })
   readonly score?: string | [string, 'AND' | 'OR', string] | null;
+
+  @IsEnum({
+    NORMAL: 'NORMAL',
+    AVG: 'AVG',
+  })
+  @IsOptional()
+  readonly mode?: 'NORMAL' | 'AVG' = 'NORMAL';
 }

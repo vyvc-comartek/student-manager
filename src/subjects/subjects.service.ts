@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Subject } from 'src/subjects/subject.entity';
 import { Repository } from 'typeorm';
-import { SqlHttpMappingHandler } from '../general/sql-http-mapping.handler';
 import {
   CreateSubjectDto,
   DeleteSubjectDto,
   SearchSubjectDto,
   UpdateSubjectDto,
 } from './dto';
+import { CheckExistSubjectDto } from './shared-dto';
 
 @Injectable()
 export class SubjectsService {
@@ -31,13 +31,17 @@ export class SubjectsService {
   }
 
   async delete({ id, name }: DeleteSubjectDto) {
-    return SqlHttpMappingHandler.handle(
-      this.subjectsRepository.delete(id ? { id } : { name }),
-    );
+    return this.subjectsRepository.delete(id ? { id } : { name });
   }
 
   async search(searchSubjectDto: SearchSubjectDto) {
     const results = await this.subjectsRepository.findOne(searchSubjectDto);
     return results;
+  }
+
+  async checkExist(checkExistSubject: CheckExistSubjectDto) {
+    return Boolean(
+      await this.subjectsRepository.findOne({ where: checkExistSubject }),
+    );
   }
 }
