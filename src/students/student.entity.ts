@@ -39,5 +39,10 @@ export class Student {
   @OneToMany(() => Score, (_score) => _score.student)
   scores: Score[];
 
-  scoreCount: number;
+  public get scoreAvg() {
+    return this.scores
+      ? this.scores.reduce((result, { score }) => result + score, 0) /
+          this.scores.length
+      : 0;
+  }
 }

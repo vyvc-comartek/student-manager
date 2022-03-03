@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { readFile } from 'fs/promises';
 import { Class } from 'src/classes/class.entity';
 import { ILike, Raw, Repository, SelectQueryBuilder } from 'typeorm';
+import * as XlsxTemplate from 'xlsx-template';
 import { Score } from '../scores/score.entity';
 import {
   CreateStudentDto,
@@ -57,8 +59,14 @@ export class StudentsService {
     itemsPerPage,
     page,
   }: SearchStudentDto) {
+    let title = '';
+
     //Nếu có trường id, trả về 1 kết quả dựa trên id
-    if (id) return this.studentsRepository.findOne(id);
+    if (id)
+      return {
+        result: [await this.studentsRepository.findOne(id)],
+        page: 1,
+      };
 
     //Nếu không có trường id, tạo queryBuilder
     let queryBuilder = this.studentsRepository.createQueryBuilder();
@@ -67,14 +75,16 @@ export class StudentsService {
     queryBuilder = queryBuilder
       .leftJoin('Student.class', 'Class')
       .leftJoin('Student.scores', 'Score')
-      .addSelect(['Student.*']);
+      .addSelect(['Student.*', 'Class.id', 'Class.name', 'Score.score']);
 
     if (score && mode === 'NORMAL')
       queryBuilder = await this.buildSearchByScore({ score }, queryBuilder);
 
-    if (score && mode === 'AVG')
+    if (score && mode === 'AVG') {
       queryBuilder = await this.buildSearchByAvgScore({ score }, queryBuilder);
 
+      title = `${typeof score === 'string' ? score : score.join(' ')}`;
+    }
     if (name)
       queryBuilder = await this.buildSearchByName({ name }, queryBuilder);
 
@@ -85,15 +95,26 @@ export class StudentsService {
       );
 
     //Thực hiện nhảy tới trang cần get dựa trên page và itemsPerPage
-    queryBuilder = queryBuilder
-      .orderBy('id')
-      .skip((page - 1) * itemsPerPage)
-      .take(itemsPerPage);
+    if (itemsPerPage && page)
+      queryBuilder = queryBuilder
+        .skip((page - 1) * itemsPerPage)
+        .take(itemsPerPage);
 
     return {
+      title: title,
       result: await queryBuilder.getMany(),
       page: page,
     };
+  }
+
+  async excel(result: { result: Student[] }) {
+    const schema = await readFile('./xlsx-template/student.xlsx');
+    const template = new XlsxTemplate(schema);
+    template.substitute(1, result);
+
+    return new StreamableFile(
+      Buffer.from(template.generate('base64'), 'base64'),
+    );
   }
 
   async searchById(picker: Pick<SearchStudentDto, 'id'>) {
@@ -140,7 +161,7 @@ export class StudentsService {
       .addSelect((sq) => {
         //Tính trung bình điểm
         return sq
-          .select('AVG(Score.score)', 'scoreAvg')
+          .addSelect('AVG(Score.score)', 'scoreAvg')
           .from(Score, 'Score')
           .where('Score.studentId=Student.id');
       }, 'scoreAvg')
