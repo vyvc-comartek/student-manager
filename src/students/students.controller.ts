@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Patch,
   Post,
   Query,
@@ -67,5 +68,16 @@ export class StudentsController {
   @Get()
   async search(@Query() searchStudentDto: SearchStudentDto) {
     return this.studentsService.search(searchStudentDto);
+  }
+
+  @Get('excel')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  async excel(@Query() searchStudentDto: SearchStudentDto) {
+    return this.studentsService.excel(
+      await this.studentsService.search(searchStudentDto),
+    );
   }
 }

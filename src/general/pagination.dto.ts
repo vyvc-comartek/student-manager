@@ -6,10 +6,10 @@ export class PaginationDto {
   @IsInt()
   @IsOptional()
   @Type(() => Number)
-  readonly itemsPerPage: number = 3;
+  readonly itemsPerPage?: number;
 
   @IsInt()
   @IsOptional()
   @Type(() => Number)
-  readonly page: number = 1;
+  readonly page?: number;
 }
