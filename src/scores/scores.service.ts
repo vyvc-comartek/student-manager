@@ -39,12 +39,10 @@ export class ScoresService {
   }
 
   async search(searchScoreDto: SearchScoreDto) {
-    const results = await this.scoresRepository.findOne({
+    return this.scoresRepository.findOne({
       relations: ['student', 'subject'],
       where: searchScoreDto,
     });
-
-    return results;
   }
 
   async checkExist(checkExistScore: CheckExistScoreDto) {
