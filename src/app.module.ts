@@ -1,3 +1,6 @@
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { TransportType } from '@nestjs-modules/mailer/dist/interfaces/mailer-options.interface';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,8 +15,11 @@ import { SubjectModule } from './subjects/subjects.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
+      inject: [ConfigService],
+
       useFactory: async (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
@@ -25,13 +31,39 @@ import { SubjectModule } from './subjects/subjects.module';
         synchronize: true,
         autoLoadEntities: true,
       }),
-      inject: [ConfigService],
     }),
+
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_HOST'),
+          secure: true,
+          requireTLS: true,
+          auth: {
+            user: configService.get<string>('MAIL_AUTH_USER'),
+            pass: configService.get<string>('MAIL_AUTH_PASS'),
+          },
+        } as TransportType,
+
+        template: {
+          dir: './email-template',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+    }),
+
     ClassModule,
     ScoreModule,
     StudentModule,
     SubjectModule,
   ],
+
   controllers: [AppController],
   providers: [AppService],
 })

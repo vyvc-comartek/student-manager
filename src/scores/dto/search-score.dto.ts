@@ -2,6 +2,12 @@ import { Expose, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsPositive, Matches } from 'class-validator';
 
 export class SearchScoreDto {
+  @IsPositive()
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  readonly id?: number;
+
   @Matches(/\d(.\d)?([><]=?\d(.\d)?)?/g)
   @IsOptional()
   readonly score?: string;
