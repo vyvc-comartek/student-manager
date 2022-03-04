@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Subject } from 'src/subjects/subject.entity';
 import { Repository } from 'typeorm';
 import {
+  CheckExistSubjectDto,
   CreateSubjectDto,
   DeleteSubjectDto,
   SearchSubjectDto,
   UpdateSubjectDto,
 } from './dto';
-import { CheckExistSubjectDto } from './shared-dto';
 
 @Injectable()
 export class SubjectsService {

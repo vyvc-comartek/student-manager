@@ -7,11 +7,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { readFile } from 'fs/promises';
 import { StudentsService } from 'src/students/students.service';
+import { EmailService } from '../modules/email/email.service';
+import { ExcelService } from '../modules/excel/excel.service';
 import {
   DatabaseExceptions,
   HttpExceptionMapper,
-} from '../general/http-exception.mapper';
+} from '../modules/http-exception.mapper';
 import { SubjectsService } from '../subjects/subjects.service';
 import {
   CreateScoreDto,
@@ -19,6 +22,7 @@ import {
   SearchScoreDto,
   UpdateScoreDto,
 } from './dto';
+import { Score } from './score.entity';
 import { ScoresService } from './scores.service';
 
 @Controller('scores')
@@ -27,6 +31,8 @@ export class ScoresController {
     private readonly scoresService: ScoresService,
     private readonly subjectsService: SubjectsService,
     private readonly studentsService: StudentsService,
+    private readonly emailService: EmailService,
+    private readonly excelService: ExcelService,
   ) {}
 
   @Post()
@@ -41,7 +47,26 @@ export class ScoresController {
     if (!isStudentExist || !isSubjectExist)
       HttpExceptionMapper.throw(DatabaseExceptions.REFERENCE_OBJ_NOT_EXIST);
 
-    return this.scoresService.create(createScoreDto);
+    return this.scoresService.create(createScoreDto).then(async (value) => {
+      //Thực thi đồng thời truy vấn Score vừa tạo và đọc file xlsx schema
+      const [score, schema] = await Promise.all([
+        this.scoresService.search({
+          id: value.raw.insertId,
+        }),
+        readFile('./xlsx-template/attch-email.xlsx'),
+      ]);
+
+      //Đổ dữ liệu vào schema để tạo tệp kết quả xlsx
+      const content = await this.excelService.create<Score>({
+        schema,
+        data: score,
+      });
+
+      //Gửi email
+      this.emailService.sendWhenScoreAdded({ score, content });
+
+      return value;
+    });
   }
 
   @Patch()
@@ -84,6 +109,10 @@ export class ScoresController {
 
   @Get()
   async search(@Query() searchScoreDto: SearchScoreDto) {
-    return this.scoresService.search(searchScoreDto);
+    return this.scoresService.search(
+      Object.assign(searchScoreDto, {
+        relations: ['student', 'subject', 'student.scores'],
+      } as SearchScoreDto),
+    );
   }
 }

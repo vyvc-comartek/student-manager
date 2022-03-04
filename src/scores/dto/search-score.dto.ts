@@ -1,7 +1,19 @@
 import { Expose, Type } from 'class-transformer';
-import { IsInt, IsOptional, IsPositive, Matches } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  Matches,
+} from 'class-validator';
 
 export class SearchScoreDto {
+  @IsPositive()
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  readonly id?: number;
+
   @Matches(/\d(.\d)?([><]=?\d(.\d)?)?/g)
   @IsOptional()
   readonly score?: string;
@@ -19,4 +31,8 @@ export class SearchScoreDto {
   @IsOptional()
   @Type(() => Number)
   readonly student?: number;
+
+  @ArrayMaxSize(6)
+  @IsOptional()
+  readonly relations?: string[] = ['student', 'subject'];
 }

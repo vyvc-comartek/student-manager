@@ -7,7 +7,7 @@ import {
   Length,
   matches,
 } from 'class-validator';
-import { PaginationDto } from 'src/general/pagination.dto';
+import { PaginationDto } from 'src/modules/pagination.dto';
 
 export class SearchStudentDto extends PaginationDto {
   @IsPositive()

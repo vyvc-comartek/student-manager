@@ -10,7 +10,7 @@ import {
 import {
   DatabaseExceptions,
   HttpExceptionMapper,
-} from '../general/http-exception.mapper';
+} from '../modules/http-exception.mapper';
 import { StudentsService } from '../students/students.service';
 import { ClassesService } from './classes.service';
 import {

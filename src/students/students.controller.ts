@@ -7,12 +7,15 @@ import {
   Patch,
   Post,
   Query,
+  StreamableFile,
 } from '@nestjs/common';
+import { readFile } from 'fs/promises';
 import { ClassesService } from 'src/classes/classes.service';
+import { ExcelService } from '../modules/excel/excel.service';
 import {
   DatabaseExceptions,
   HttpExceptionMapper,
-} from '../general/http-exception.mapper';
+} from '../modules/http-exception.mapper';
 import { ScoresService } from '../scores/scores.service';
 import {
   CreateStudentDto,
@@ -27,6 +30,7 @@ export class StudentsController {
     private readonly studentsService: StudentsService,
     private readonly classesService: ClassesService,
     private readonly scoresService: ScoresService,
+    private readonly excelService: ExcelService,
   ) {}
 
   @Post()
@@ -76,8 +80,11 @@ export class StudentsController {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   )
   async excel(@Query() searchStudentDto: SearchStudentDto) {
-    return this.studentsService.excel(
-      await this.studentsService.search(searchStudentDto),
-    );
+    const resultExcel = await this.excelService.create({
+      schema: await readFile('./xlsx-template/student.xlsx'),
+      data: await this.studentsService.search(searchStudentDto),
+    });
+
+    return new StreamableFile(resultExcel);
   }
 }

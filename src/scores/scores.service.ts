@@ -3,9 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindConditions, Repository } from 'typeorm';
 import { Student } from '../students/student.entity';
 import { Subject } from '../subjects/subject.entity';
-import { DeleteScoreDto, SearchScoreDto, UpdateScoreDto } from './dto';
+import {
+  CheckExistScoreDto,
+  DeleteScoreDto,
+  SearchScoreDto,
+  UpdateScoreDto,
+} from './dto';
 import { Score } from './score.entity';
-import { CheckExistScoreDto } from './shared-dto';
 
 @Injectable()
 export class ScoresService {
@@ -38,13 +42,11 @@ export class ScoresService {
     );
   }
 
-  async search(searchScoreDto: SearchScoreDto) {
-    const results = await this.scoresRepository.findOne({
-      relations: ['student', 'subject'],
+  async search({ relations, ...searchScoreDto }: SearchScoreDto) {
+    return this.scoresRepository.findOne({
+      relations,
       where: searchScoreDto,
     });
-
-    return results;
   }
 
   async checkExist(checkExistScore: CheckExistScoreDto) {

@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Like as ILike, ObjectLiteral, Raw, Repository } from 'typeorm';
 import { Class } from './class.entity';
 import {
+  CheckExistClassDto,
   CreateClassDto,
   DeleteClassDto,
   SearchClassDto,
   UpdateClassDto,
 } from './dto';
-import { CheckExistClassDto } from './shared-dto';
 
 @Injectable()
 export class ClassesService {
