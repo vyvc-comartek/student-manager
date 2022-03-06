@@ -40,11 +40,15 @@ import { SubjectModule } from './subjects/subjects.module';
       useFactory: async (configService: ConfigService) => ({
         transport: {
           host: configService.get<string>('MAIL_HOST'),
-          secure: true,
+          service: 'gmail',
           requireTLS: true,
+          secure: true,
           auth: {
-            user: configService.get<string>('MAIL_AUTH_USER'),
-            pass: configService.get<string>('MAIL_AUTH_PASS'),
+            type: 'OAuth2',
+            user: configService.get<string>('MAIL_USER'),
+            clientId: configService.get<string>('MAIL_CLIENT_ID'),
+            clientSecret: configService.get<string>('MAIL_CLIENT_SECRET'),
+            refreshToken: configService.get<string>('MAIL_REFRESH_TOKEN'),
           },
         } as TransportType,
 

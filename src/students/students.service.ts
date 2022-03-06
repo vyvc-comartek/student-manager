@@ -1,17 +1,15 @@
-import { Injectable, StreamableFile } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { readFile } from 'fs/promises';
 import { Class } from 'src/classes/class.entity';
 import { ILike, Raw, Repository, SelectQueryBuilder } from 'typeorm';
-import * as XlsxTemplate from 'xlsx-template';
 import { Score } from '../scores/score.entity';
 import {
+  CheckExistStudentDto,
   CreateStudentDto,
   DeleteStudentDto,
   SearchStudentDto,
   UpdateStudentDto,
 } from './dto';
-import { CheckExistStudentDto } from './shared-dto';
 import { Student } from './student.entity';
 
 @Injectable()
@@ -85,6 +83,7 @@ export class StudentsService {
 
       title = `${typeof score === 'string' ? score : score.join(' ')}`;
     }
+
     if (name)
       queryBuilder = await this.buildSearchByName({ name }, queryBuilder);
 
@@ -107,23 +106,13 @@ export class StudentsService {
     };
   }
 
-  async excel(result: { result: Student[] }) {
-    const schema = await readFile('./xlsx-template/student.xlsx');
-    const template = new XlsxTemplate(schema);
-    template.substitute(1, result);
-
-    return new StreamableFile(
-      Buffer.from(template.generate('base64'), 'base64'),
-    );
-  }
-
   async searchById(picker: Pick<SearchStudentDto, 'id'>) {
     return this.studentsRepository.findOne(picker.id);
   }
 
   /**
    * Hàm này được tách ra từ search(), lý do chia tách:
-   * Để có thể tạo hàm searchByScore() riêng biệt nếu muốn
+   * Để dễ dàng tạo thêm chức năng searchByScore() riêng nếu muốn
    */
   async buildSearchByScore(
     picker: Pick<SearchStudentDto, 'score'>,
