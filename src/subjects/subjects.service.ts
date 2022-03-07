@@ -35,13 +35,16 @@ export class SubjectsService {
   }
 
   async search(searchSubjectDto: SearchSubjectDto) {
-    const results = await this.subjectsRepository.findOne(searchSubjectDto);
-    return results;
+    return this.subjectsRepository.findOne(searchSubjectDto);
   }
 
   async checkExist(checkExistSubject: CheckExistSubjectDto) {
     return Boolean(
       await this.subjectsRepository.findOne({ where: checkExistSubject }),
     );
+  }
+
+  async countSubjects() {
+    return this.subjectsRepository.count();
   }
 }
