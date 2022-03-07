@@ -1,5 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import Mail from 'nodemailer/lib/mailer';
 import { SendEmailScoreAddedDto } from './dto';
 
 @Injectable()
@@ -15,21 +16,26 @@ export class EmailService {
       to: score.student.email,
       subject: 'Điểm của bạn đã được cập nhật!',
       template: './email-template/score-added',
-      attachments: content
-        ? [
-            {
-              filename: 'result.xlsx',
-              contentType:
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              content,
-            },
-          ]
-        : [],
+      attachments: this._attachmentsExcels(content),
       context: score,
     };
 
-    return this.mailerService.sendMail(
-      Object.assign(defaultOptions, overrideOptions),
-    );
+    return this.mailerService.sendMail({
+      ...defaultOptions,
+      ...overrideOptions,
+    });
+  }
+
+  private _attachmentsExcels(contents: Buffer[]) {
+    function createAttachInfo(content, index) {
+      return {
+        filename: `result-${index}.xlsx`,
+        contentType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        content,
+      };
+    }
+
+    return contents.map(createAttachInfo) as Mail.Attachment[];
   }
 }

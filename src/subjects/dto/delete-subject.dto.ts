@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsPositive, Length, ValidateIf } from 'class-validator';
+
 export class DeleteSubjectDto {
   @ValidateIf((o) => o.id || !o.name)
   @IsPositive()

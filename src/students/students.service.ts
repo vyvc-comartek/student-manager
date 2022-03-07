@@ -17,8 +17,6 @@ export class StudentsService {
   constructor(
     @InjectRepository(Student)
     private readonly studentsRepository: Repository<Student>,
-    @InjectRepository(Class)
-    private readonly classesRepository: Repository<Class>,
   ) {}
 
   async create({ class: clss, ...createStudentDto }: CreateStudentDto) {
@@ -27,12 +25,7 @@ export class StudentsService {
       class: { id: clss } as Class,
     };
 
-    return this.studentsRepository.insert(newStudent).then((value) => {
-      //Cập nhật totalMember trong bảng Class khi insert Student thành công
-      this.classesRepository.increment({ id: clss }, 'totalMember', 1);
-
-      return value;
-    });
+    return this.studentsRepository.insert(newStudent);
   }
 
   async update({ id, class: clss, ...updateStudentDto }: UpdateStudentDto) {
@@ -118,25 +111,29 @@ export class StudentsService {
     picker: Pick<SearchStudentDto, 'score'>,
     builder: SelectQueryBuilder<Student>,
   ) {
+    function selectCountStudent(sq: SelectQueryBuilder<any>) {
+      //Đếm số môn mà học sinh đã tham gia học
+      return sq
+        .select('COUNT(Score.id)', 'countSubject')
+        .from(Score, 'Score')
+        .where('Score.studentId=Student.id');
+    }
+
+    function selectCountSubject(sq: SelectQueryBuilder<any>) {
+      //Đếm số môn mà học sinh đã tham gia học và đạt điểm trong khoảng <score>
+      return sq
+        .select('COUNT(Score.id)', 'countScore')
+        .from(Score, 'Score')
+        .where({
+          score: this._getScoreCondition(picker.score),
+        })
+        .andWhere('Score.studentId=Student.id');
+    }
+
     return (
       builder
-        .addSelect((sq) => {
-          //Đếm số môn mà học sinh đã tham gia học
-          return sq
-            .select('COUNT(Score.id)', 'countSubject')
-            .from(Score, 'Score')
-            .where('Score.studentId=Student.id');
-        }, 'countSubject')
-        .addSelect((sq) => {
-          //Đếm số môn mà học sinh đã tham gia học và đạt điểm trong khoảng <score>
-          return sq
-            .select('COUNT(Score.id)', 'countScore')
-            .from(Score, 'Score')
-            .where({
-              score: this.getScoreCondition(picker.score),
-            })
-            .andWhere('Score.studentId=Student.id');
-        }, 'countScore')
+        .addSelect(selectCountStudent, 'countSubject')
+        .addSelect(selectCountSubject, 'countScore')
         //Nếu số môn tham gia học = Số môn đạt điểm cao thì select student này
         .having('countSubject=countScore')
     );
@@ -146,15 +143,17 @@ export class StudentsService {
     picker: Pick<SearchStudentDto, 'score'>,
     builder: SelectQueryBuilder<Student>,
   ) {
+    function caculateAvg(sq: SelectQueryBuilder<any>) {
+      //Tính trung bình điểm
+      return sq
+        .addSelect('AVG(Score.score)', 'scoreAvg')
+        .from(Score, 'Score')
+        .where('Score.studentId=Student.id');
+    }
+
     return builder
-      .addSelect((sq) => {
-        //Tính trung bình điểm
-        return sq
-          .addSelect('AVG(Score.score)', 'scoreAvg')
-          .from(Score, 'Score')
-          .where('Score.studentId=Student.id');
-      }, 'scoreAvg')
-      .having(this.getScoreCondition(picker.score).getSql('scoreAvg'));
+      .addSelect(caculateAvg, 'scoreAvg')
+      .having(this._getScoreCondition(picker.score).getSql('scoreAvg'));
   }
 
   async buildSearchByName(
@@ -175,7 +174,7 @@ export class StudentsService {
     });
   }
 
-  private getScoreCondition(score: string | [string, 'AND' | 'OR', string]) {
+  private _getScoreCondition(score: string | [string, 'AND' | 'OR', string]) {
     if (typeof score === 'string') return Raw((alias) => alias + score);
     else
       return Raw(

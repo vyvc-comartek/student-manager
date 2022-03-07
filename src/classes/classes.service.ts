@@ -50,22 +50,35 @@ export class ClassesService {
       .take(itemsPerPage);
 
     //Nếu là toán tử AND
-    if (operator === 'AND')
-      //Nếu một thuộc tính có value là undefined thì typeorm có bỏ qua nó không?
-      queryBuilder = queryBuilder.where({
-        name: name && ILike(`%${name}%`),
-        teacherName: teacherName && ILike(`%${teacherName}%`),
-        totalMember: totalMember && this.totalMemberSearchRaw(totalMember),
-      } as ObjectLiteral);
+    if (operator === 'AND') {
+      let conditions = {} as ObjectLiteral;
+
+      if (name) conditions['name'] = ILike(`%${name}%`);
+
+      if (teacherName) conditions['teacherName'] = ILike(`%${teacherName}%`);
+
+      if (totalMember)
+        conditions['totalMember'] = this._totalMemberSearchRaw(totalMember);
+
+      queryBuilder = queryBuilder.where(conditions);
+    }
 
     //Nếu là toán tử OR
-    if (operator === 'OR')
-      //Nếu một thuộc tính có value là undefined thì typeorm có bỏ qua nó không?
-      queryBuilder = queryBuilder.where([
-        { name: name && ILike(`%${name}%`) },
-        { teacherName: teacherName && ILike(`%${teacherName}%`) },
-        { totalMember: totalMember && this.totalMemberSearchRaw(totalMember) },
-      ] as ObjectLiteral[]);
+    if (operator === 'OR') {
+      let conditions = [] as ObjectLiteral[];
+
+      if (name) conditions.push({ name: ILike(`%${name}%`) });
+
+      if (teacherName)
+        conditions.push({ teacherName: ILike(`%${teacherName}%`) });
+
+      if (totalMember)
+        conditions.push({
+          totalMember: this._totalMemberSearchRaw(totalMember),
+        });
+
+      queryBuilder = queryBuilder.where(conditions);
+    }
 
     return queryBuilder.getMany();
   }
@@ -76,8 +89,12 @@ export class ClassesService {
     );
   }
 
+  async updateTotalMember({ id }: Class) {
+    return this.classesRepository.increment({ id }, 'totalMember', 1);
+  }
+
   //Hàm xử lý biểu thức của tham số totalMember thành giá trị hợp lệ khi thực hiện tìm kiếm
-  private totalMemberSearchRaw(
+  private _totalMemberSearchRaw(
     totalMember: string | [string, 'AND' | 'OR', string],
   ) {
     if (typeof totalMember === 'string')

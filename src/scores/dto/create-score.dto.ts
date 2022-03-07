@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { IsInt, IsPositive, Max, Min } from 'class-validator';
+
 export class CreateScoreDto {
   @Expose({ name: 'studentId' })
   @IsPositive()

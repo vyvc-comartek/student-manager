@@ -39,9 +39,13 @@ export class SubjectsController {
 
   @Delete()
   async delete(@Body() deleteSubjectDto: DeleteSubjectDto) {
-    const isScoreExist =
-      deleteSubjectDto.id &&
-      (await this.scoresService.checkExist({ subject: deleteSubjectDto.id }));
+    let isScoreExist = false;
+
+    if (deleteSubjectDto.id) {
+      isScoreExist = await this.scoresService.checkExist({
+        subject: deleteSubjectDto.id,
+      });
+    }
 
     if (isScoreExist)
       HttpExceptionMapper.throw(DatabaseExceptions.OBJ_REFERENCED);

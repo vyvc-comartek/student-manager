@@ -8,6 +8,7 @@ import {
   Matches,
 } from 'class-validator';
 import { PaginationDto } from 'src/modules/pagination.dto';
+
 export class SearchClassDto extends PaginationDto {
   @IsPositive()
   @IsInt()
@@ -25,14 +26,13 @@ export class SearchClassDto extends PaginationDto {
    * - Trong khoảng trái hoặc phải của trục số: totalMember=>=5
    * - Trong khoảng giữa của trục số: totalMember=<=5OR>8
    */
-  @Matches(/\d+|(([><]=?\d+)((AND|OR)([><]=?\d+))?)/g)
   @IsOptional()
   @Transform(({ value }) => {
     const values = (value as string).match(
-      /(\d+)|(([><]=?\d+)((AND|OR)([><]=?\d+))?)/,
+      /([<>]=?)?(\d+)((AND|OR)([<>]=?)(\d+))?/,
     );
-    if (values.at(-1)) return [values[3], values[5], values[6]];
-    else if (!values[1]) return values[2];
+    if (values.at(-1)) return [values[1], values[4], values[5]];
+    else if (!values[2]) return values[1];
     else return values[1];
   })
   readonly totalMember?: string | [string, 'AND' | 'OR', string];
