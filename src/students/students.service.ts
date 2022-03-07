@@ -133,7 +133,7 @@ export class StudentsService {
             .select('COUNT(Score.id)', 'countScore')
             .from(Score, 'Score')
             .where({
-              score: this.getScoreCondition(picker.score),
+              score: this._getScoreCondition(picker.score),
             })
             .andWhere('Score.studentId=Student.id');
         }, 'countScore')
@@ -154,7 +154,7 @@ export class StudentsService {
           .from(Score, 'Score')
           .where('Score.studentId=Student.id');
       }, 'scoreAvg')
-      .having(this.getScoreCondition(picker.score).getSql('scoreAvg'));
+      .having(this._getScoreCondition(picker.score).getSql('scoreAvg'));
   }
 
   async buildSearchByName(
@@ -175,7 +175,7 @@ export class StudentsService {
     });
   }
 
-  private getScoreCondition(score: string | [string, 'AND' | 'OR', string]) {
+  private _getScoreCondition(score: string | [string, 'AND' | 'OR', string]) {
     if (typeof score === 'string') return Raw((alias) => alias + score);
     else
       return Raw(

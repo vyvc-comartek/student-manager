@@ -8,8 +8,7 @@ export class SendEmailScoreAddedDto {
   score: Score;
 
   @IsOptional()
-  @Type(() => Buffer)
-  content?: Buffer;
+  content?: Buffer[] = [];
 
   @IsOptional()
   overrideOptions?: ISendMailOptions;

@@ -55,7 +55,7 @@ export class ClassesService {
       queryBuilder = queryBuilder.where({
         name: name && ILike(`%${name}%`),
         teacherName: teacherName && ILike(`%${teacherName}%`),
-        totalMember: totalMember && this.totalMemberSearchRaw(totalMember),
+        totalMember: totalMember && this._totalMemberSearchRaw(totalMember),
       } as ObjectLiteral);
 
     //Nếu là toán tử OR
@@ -64,7 +64,7 @@ export class ClassesService {
       queryBuilder = queryBuilder.where([
         { name: name && ILike(`%${name}%`) },
         { teacherName: teacherName && ILike(`%${teacherName}%`) },
-        { totalMember: totalMember && this.totalMemberSearchRaw(totalMember) },
+        { totalMember: totalMember && this._totalMemberSearchRaw(totalMember) },
       ] as ObjectLiteral[]);
 
     return queryBuilder.getMany();
@@ -77,7 +77,7 @@ export class ClassesService {
   }
 
   //Hàm xử lý biểu thức của tham số totalMember thành giá trị hợp lệ khi thực hiện tìm kiếm
-  private totalMemberSearchRaw(
+  private _totalMemberSearchRaw(
     totalMember: string | [string, 'AND' | 'OR', string],
   ) {
     if (typeof totalMember === 'string')
