@@ -20,9 +20,23 @@ export class EmailService {
       context: score,
     };
 
-    return this.mailerService.sendMail(
-      Object.assign(defaultOptions, overrideOptions),
-    );
+    return this.mailerService.sendMail({
+      ...defaultOptions,
+      ...overrideOptions,
+    });
+  }
+
+  private _attachmentsExcels(contents: Buffer[]) {
+    function createAttachInfo(content, index) {
+      return {
+        filename: `result-${index}.xlsx`,
+        contentType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        content,
+      };
+    }
+
+    return contents.map(createAttachInfo) as Mail.Attachment[];
   }
 
   private _attachmentsExcels(contents: Buffer[]) {

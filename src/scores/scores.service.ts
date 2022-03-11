@@ -30,16 +30,19 @@ export class ScoresService {
 
   async update({ id, student, subject, score }: UpdateScoreDto) {
     //updateById nếu id được cung cấp, updateByStudentSubjectId nếu id không được cung cấp
-    return this.scoresRepository.update(
-      id ? { id } : ({ student, subject } as FindConditions<Score>),
-      { score },
-    );
+    const condition = id
+      ? { id }
+      : ({ student, subject } as FindConditions<Score>);
+
+    return this.scoresRepository.update(condition, { score });
   }
 
   async delete({ id, student, subject }: DeleteScoreDto) {
-    return this.scoresRepository.delete(
-      id ? { id } : ({ student, subject } as FindConditions<Score>),
-    );
+    const condition = id
+      ? { id }
+      : ({ student, subject } as FindConditions<Score>);
+
+    return this.scoresRepository.delete(condition);
   }
 
   async search({ relations, ...searchScoreDto }: SearchScoreDto) {

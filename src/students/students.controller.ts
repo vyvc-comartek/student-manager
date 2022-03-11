@@ -24,6 +24,7 @@ import {
   UpdateStudentDto,
 } from './dto';
 import { StudentsService } from './students.service';
+
 @Controller('students')
 export class StudentsController {
   constructor(
@@ -35,23 +36,29 @@ export class StudentsController {
 
   @Post()
   async create(@Body() createStudentDto: CreateStudentDto) {
-    const isClassExist = !(await this.classesService.checkExist({
+    const isClassExist = await this.classesService.checkExist({
       id: createStudentDto.class,
-    }));
+    });
 
-    if (isClassExist)
+    if (!isClassExist)
       HttpExceptionMapper.throw(DatabaseExceptions.REFERENCE_OBJ_NOT_EXIST);
 
-    return this.studentsService.create(createStudentDto);
+    return this.studentsService
+      .create(createStudentDto)
+      .then(this._afterInsertStudent);
   }
 
   @Patch()
   async update(@Body() updateStudentDto: UpdateStudentDto) {
-    const isClassNotExist =
-      updateStudentDto.class &&
-      !(await this.classesService.checkExist({ id: updateStudentDto.class }));
+    let isClassExist = false;
 
-    if (isClassNotExist)
+    if (updateStudentDto.class) {
+      isClassExist = await this.classesService.checkExist({
+        id: updateStudentDto.class,
+      });
+    }
+
+    if (isClassExist)
       HttpExceptionMapper.throw(DatabaseExceptions.REFERENCE_OBJ_NOT_EXIST);
 
     return this.studentsService.update(updateStudentDto);
@@ -80,11 +87,23 @@ export class StudentsController {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   )
   async excel(@Query() searchStudentDto: SearchStudentDto) {
-    const resultExcel = await this.excelService.create({
-      schema: await readFile('./xlsx-template/student.xlsx'),
-      data: await this.studentsService.search(searchStudentDto),
+    const [schema, data] = await Promise.all([
+      await readFile('./xlsx-template/student.xlsx'),
+      await this.studentsService.search(searchStudentDto),
+    ]);
+
+    const resultExcelData = await this.excelService.create({
+      schema,
+      data,
     });
 
-    return new StreamableFile(resultExcel);
+    return new StreamableFile(resultExcelData);
+  }
+
+  private async _afterInsertStudent(insertedStudent) {
+    //Cập nhật totalMember trong bảng Class khi insert Student thành công
+    this.classesService.updateTotalMember(insertedStudent.class);
+
+    return insertedStudent;
   }
 }

@@ -9,6 +9,7 @@ import { ScoreModule } from 'src/scores/scores.module';
 import { Subject } from './subject.entity';
 import { SubjectsController } from './subjects.controller';
 import { SubjectsService } from './subjects.service';
+
 @Module({
   imports: [TypeOrmModule.forFeature([Subject]), forwardRef(() => ScoreModule)],
   providers: [SubjectsService],
