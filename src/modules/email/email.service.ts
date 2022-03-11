@@ -38,4 +38,13 @@ export class EmailService {
 
     return contents.map(createAttachInfo) as Mail.Attachment[];
   }
+
+  private _attachmentsExcels(contents: Buffer[]) {
+    return contents.map((content, i) => ({
+      filename: `result-${i}.xlsx`,
+      contentType:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      content,
+    })) as Mail.Attachment[];
+  }
 }
